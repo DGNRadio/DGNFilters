@@ -95,18 +95,22 @@ async function startServer() {
     res.sendStatus(200);
 
     const update = req.body;
+    console.log('Received Telegram update:', JSON.stringify(update, null, 2));
     
     // We only care about messages with text
     if (!update || !update.message || !update.message.text) {
+      console.log('Update ignored: No message text found');
       return;
     }
 
     const chatId = update.message.chat.id;
     const messageText = update.message.text;
+    console.log(`Processing message from chat ${chatId}: "${messageText}"`);
 
     const responseText = findMatchingResponse(messageText);
 
     if (responseText) {
+      console.log(`Match found! Sending response: "${responseText}"`);
       const botToken = process.env.TELEGRAM_BOT_TOKEN;
       if (!botToken) {
         console.error('TELEGRAM_BOT_TOKEN is not set');
@@ -114,7 +118,7 @@ async function startServer() {
       }
 
       try {
-        await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -125,9 +129,18 @@ async function startServer() {
             reply_to_message_id: update.message.message_id, // Reply to the user
           }),
         });
+        
+        const data = await response.json();
+        if (!response.ok) {
+          console.error('Telegram API Error:', data);
+        } else {
+          console.log('Message sent successfully');
+        }
       } catch (error) {
         console.error('Failed to send message to Telegram:', error);
       }
+    } else {
+      console.log('No matching filter found for this message.');
     }
   });
 
