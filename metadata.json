@@ -1,0 +1,5 @@
+{
+  "name": "DGNFilters Bot Admin",
+  "description": "Admin dashboard for the DGNFilters Telegram bot that responds to specific keywords in group chats.",
+  "requestFramePermissions": []
+}
